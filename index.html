@@ -1,0 +1,107 @@
+<script>
+'use strict';
+var histogram;
+var sampleSize = 1000;
+
+function init() {
+    histogram = {
+        x: {},
+        y: {},
+        z: {},
+        all: {}
+    }
+}
+init();
+
+function findXMax(dim, x) {
+    return Object.keys(histogram[dim]).sort(function(a, b) {
+        return histogram[dim][b] - histogram[dim][a]
+    }).slice(0, x || 3).map(function(key) {
+        return 'value: ' + key + ' x' + histogram[dim][key]
+    })
+}
+
+function calcMean(dim) {
+    return Object.keys(histogram[dim])
+        .reduce(function(prev, key, i, arr) {
+            return prev + histogram[dim][key] / arr.length;
+        }, 0) / sampleSize;
+}
+
+function calcDerivation(dim, medium) {
+    return Math.sqrt(Object.keys(histogram[dim])
+        .reduce(function(prev, key, i, arr) {
+            return prev + Math.pow(histogram[dim][key] - medium, 2) / arr.length;
+        }, 0)) / sampleSize;
+}
+
+function round(num) {
+    return Math.round(num * 100);
+}
+
+function printHistogramDim(dim, max) {
+    var mean = round(calcMean(dim));
+    var derivation = round(calcDerivation(dim, mean));
+
+    document.getElementById(dim).innerHTML = (dim + ':', findXMax(dim, max).join('<br>')) + '<br>Derivation: ' + derivation + '%<br><br><br>';
+}
+
+function printHistogram() {
+    printHistogramDim('x');
+    printHistogramDim('y');
+    printHistogramDim('z');
+    printHistogramDim('all', 4);
+}
+
+function add(dim, value) {
+    value = Math.abs(value);
+    histogram[dim][value] = histogram[dim][value] ? histogram[dim][value] + 1 : 1;
+}
+
+var i = 0;
+
+function handleMotionEvent(event) {
+    if (i > sampleSize) {
+        return;
+    }
+
+    // console.log(event)
+    var x = event.acceleration.x || event.accelerationIncludingGravity.x;
+    var y = event.acceleration.y || event.accelerationIncludingGravity.y;
+    var z = event.acceleration.z || event.accelerationIncludingGravity.z;
+
+    add('x', x);
+    add('y', y);
+    add('z', z);
+
+    add('all', x);
+    add('all', y);
+    add('all', z);
+
+    i++;
+    if (!(i % 50)) {
+        printHistogram();
+        document.getElementById('i').innerHTML = 'Sample Size: ' + i + '<br>';
+    }
+}
+window.addEventListener("devicemotion", handleMotionEvent, true);
+</script>
+<p>
+    <h3><span id="i"></span></h3>
+</p>
+<p>
+    <h3>x values</h3>
+    <div id="x"></div>
+</p>
+<p>
+    <h3>y values</h3>
+    <div id="y"></div>
+</p>
+<p>
+    <h3>z values</h3>
+    <div id="z"></div>
+</p>
+<p>
+    <h3>accumulated values</h3>
+    <div id="all"></div>
+</p>
