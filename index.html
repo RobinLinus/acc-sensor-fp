@@ -1,3 +1,8 @@
+<style type="text/css">
+    h3{
+        margin-bottom: 0;
+    }
+</style>
 <script>
 'use strict';
 var histogram;
@@ -13,11 +18,11 @@ function init() {
 }
 init();
 
-function findXMax(dim, x) {
+function findMax(dim, x) {
     return Object.keys(histogram[dim]).sort(function(a, b) {
         return histogram[dim][b] - histogram[dim][a]
     }).slice(0, x || 3).map(function(key) {
-        return 'value: ' + key + ' x' + histogram[dim][key]
+        return '<td>' + histogram[dim][key] + '</td><td>' + key +'</td>'
     })
 }
 
@@ -43,7 +48,7 @@ function printHistogramDim(dim, max) {
     var mean = round(calcMean(dim));
     var derivation = round(calcDerivation(dim, mean));
 
-    document.getElementById(dim).innerHTML = (dim + ':', findXMax(dim, max).join('<br>')) + '<br>Derivation: ' + derivation + '%<br><br><br>';
+    document.getElementById(dim).innerHTML = "<table><tr><th>frequency</th><th>value</th></tr>"+findMax(dim, max).map(function(e){return '<tr>'+e+'</tr>'}).join('')+'</table>'
 }
 
 function printHistogram() {
@@ -90,18 +95,18 @@ window.addEventListener("devicemotion", handleMotionEvent, true);
     <h3><span id="i"></span></h3>
 </p>
 <p>
-    <h3>x values</h3>
+    <h3>top3 x values</h3>
     <div id="x"></div>
 </p>
 <p>
-    <h3>y values</h3>
+    <h3>top3 y values</h3>
     <div id="y"></div>
 </p>
 <p>
-    <h3>z values</h3>
+    <h3>top3 z values</h3>
     <div id="z"></div>
 </p>
 <p>
-    <h3>accumulated values</h3>
+    <h3>top4 accumulated values</h3>
     <div id="all"></div>
 </p>
